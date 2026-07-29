@@ -40,6 +40,3 @@ jobs:
 
       - name: Build Android (APK)
         run: eas build --platform android --profile preview --non-interactive
-
-      - name: Build iOS
-        run: eas build --platform ios --profile preview --non-interactive
