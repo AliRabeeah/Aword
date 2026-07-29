@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
     steps:
       - name: Checkout Repository
@@ -34,7 +33,7 @@ jobs:
         run: eas whoami
 
       - name: Initialize EAS Project
-        run: eas init --id ${{ secrets.EAS_PROJECT_ID }} --force --non-interactive
+        run: eas init --id 5d909088-fc8f-42ce-a720-1dd7d9d0ac47 --force --non-interactive
 
       - name: Install Dependencies
         run: npm install

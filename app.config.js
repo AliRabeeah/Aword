@@ -5,10 +5,7 @@ module.exports = ({ config }) => ({
   version: config.version || '1.0.0',
   extra: {
     eas: {
-      // Replace this with your actual EAS project ID.
-      // Run `eas init` locally to get your project ID,
-      // or find it at https://expo.dev/projects
-      projectId: process.env.EAS_PROJECT_ID || 'YOUR_EAS_PROJECT_ID_HERE',
+      projectId: '5d909088-fc8f-42ce-a720-1dd7d9d0ac47',
     },
   },
   cli: {
