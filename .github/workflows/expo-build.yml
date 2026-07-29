@@ -3,14 +3,15 @@ name: Expo Build CI/CD
 on:
   push:
     branches: [main, master]
-  pull_request:
-    branches: [main, master]
   workflow_dispatch:
 
 jobs:
   build:
     name: Build Expo App
     runs-on: ubuntu-latest
+    env:
+      EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+      EAS_PROJECT_ID: ${{ secrets.EAS_PROJECT_ID }}
 
     steps:
       - name: Checkout Repository
@@ -29,17 +30,17 @@ jobs:
           token: ${{ secrets.EXPO_TOKEN }}
           packager: npm
 
+      - name: Verify Login
+        run: eas whoami
+
+      - name: Initialize EAS Project
+        run: eas init --id ${{ secrets.EAS_PROJECT_ID }} --force --non-interactive
+
       - name: Install Dependencies
         run: npm install
 
       - name: Build Android (APK)
         run: eas build --platform android --profile preview --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
       - name: Build iOS
         run: eas build --platform ios --profile preview --non-interactive
-        env:
-          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
