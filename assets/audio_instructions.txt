@@ -1,0 +1,22 @@
+AUDIO FILES NEEDED
+==================
+Place the following .mp3 files in this directory:
+
+1. intro_music.mp3    - Short intro/jingle music for splash screen (3-5 seconds)
+2. background_music.mp3 - Looping background music for gameplay
+3. success.mp3        - Short positive sound for correct answers
+4. error.mp3          - Short negative sound for wrong answers
+5. applause.mp3       - Applause sound for winning the puzzle
+6. sad_tone.mp3       - Sad/melancholy sound for losing
+7. cheer.mp3          - Cheering sound for winning
+8. boo.mp3            - Booing sound for losing
+
+HOW TO GET FREE AUDIO FILES:
+-----------------------------
+You can download free sound effects from:
+- Pixabay Sound Effects: https://pixabay.com/sound-effects/
+- Freesound: https://freesound.org/
+- Zapsplat: https://www.zapsplat.com/
+
+Search for appropriate sounds and download them as .mp3 files.
+Rename them to match the filenames above.
