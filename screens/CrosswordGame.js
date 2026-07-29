@@ -62,6 +62,7 @@ export default function CrosswordGame() {
   const [isComplete, setIsComplete] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
+  const [audioReady, setAudioReady] = useState(false);
 
   // Audio refs
   const bgMusicRef = useRef(null);
@@ -80,39 +81,103 @@ export default function CrosswordGame() {
 
   // ─── Load settings from AsyncStorage ────────────────────────────────────
   useEffect(() => {
-    loadSettings();
+    (async () => {
+      try {
+        const saved = await AsyncStorage.getItem(SETTINGS_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setSettings({ ...DEFAULT_SETTINGS, ...parsed });
+        }
+      } catch (error) {
+        console.log('Error loading settings:', error);
+      }
+    })();
   }, []);
 
   // ─── Setup background music ─────────────────────────────────────────────
   useEffect(() => {
-    if (settings.music) {
-      startBackgroundMusic();
+    if (settings.music && audioReady) {
+      (async () => {
+        try {
+          await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+          if (bgMusicRef.current) {
+            await bgMusicRef.current.unloadAsync();
+          }
+          const { sound } = await Audio.Sound.createAsync(
+            require('../assets/background_music.mp3'),
+            { shouldPlay: true, isLooping: true, volume: 0.3 }
+          );
+          bgMusicRef.current = sound;
+        } catch (error) {
+          console.log('Background music error:', error.message);
+        }
+      })();
     } else {
-      stopBackgroundMusic();
+      // Stop music
+      (async () => {
+        if (bgMusicRef.current) {
+          try {
+            await bgMusicRef.current.stopAsync();
+            await bgMusicRef.current.unloadAsync();
+          } catch (error) {
+            // Sound may already be unloaded
+          }
+          bgMusicRef.current = null;
+        }
+      })();
     }
-    return () => stopBackgroundMusic();
+    return () => {
+      if (bgMusicRef.current) {
+        try {
+          bgMusicRef.current.unloadAsync();
+        } catch (e) {
+          // ignore
+        }
+        bgMusicRef.current = null;
+      }
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [settings.music]);
+  }, [settings.music, audioReady]);
 
   // ─── Load sound effects ─────────────────────────────────────────────────
   useEffect(() => {
-    loadSoundEffects();
-    return () => unloadSoundEffects();
+    (async () => {
+      try {
+        const fileMap = {
+          success: require('../assets/success.mp3'),
+          error: require('../assets/error.mp3'),
+          applause: require('../assets/applause.mp3'),
+          sadTone: require('../assets/sad_tone.mp3'),
+          cheer: require('../assets/cheer.mp3'),
+          boo: require('../assets/boo.mp3'),
+        };
+
+        for (const name of Object.keys(fileMap)) {
+          const { sound } = await Audio.Sound.createAsync(fileMap[name]);
+          soundEffects.current[name] = sound;
+        }
+        setAudioReady(true);
+      } catch (error) {
+        console.log('Sound effects load error:', error.message);
+        setAudioReady(true); // Still mark ready so app works without audio
+      }
+    })();
+
+    return () => {
+      for (const key of Object.keys(soundEffects.current)) {
+        if (soundEffects.current[key]) {
+          try {
+            soundEffects.current[key].unloadAsync();
+          } catch (error) {
+            // ignore
+          }
+          soundEffects.current[key] = null;
+        }
+      }
+    };
   }, []);
 
   // ─── SETTINGS MANAGEMENT ────────────────────────────────────────────────
-  const loadSettings = async () => {
-    try {
-      const saved = await AsyncStorage.getItem(SETTINGS_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSettings({ ...DEFAULT_SETTINGS, ...parsed });
-      }
-    } catch (error) {
-      console.log('Error loading settings:', error);
-    }
-  };
-
   const saveSettings = async (newSettings) => {
     try {
       await AsyncStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
@@ -127,71 +192,9 @@ export default function CrosswordGame() {
     await saveSettings(newSettings);
   };
 
-  // ─── AUDIO MANAGEMENT ──────────────────────────────────────────────────
-  const startBackgroundMusic = async () => {
-    try {
-      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-      if (bgMusicRef.current) {
-        await bgMusicRef.current.unloadAsync();
-      }
-      const { sound } = await Audio.Sound.createAsync(
-        require('../assets/background_music.mp3'),
-        { shouldPlay: true, isLooping: true, volume: 0.3 }
-      );
-      bgMusicRef.current = sound;
-    } catch (error) {
-      console.log('Background music error:', error.message);
-    }
-  };
-
-  const stopBackgroundMusic = async () => {
-    if (bgMusicRef.current) {
-      try {
-        await bgMusicRef.current.stopAsync();
-        await bgMusicRef.current.unloadAsync();
-      } catch (error) {
-        // Sound may already be unloaded
-      }
-      bgMusicRef.current = null;
-    }
-  };
-
-  const loadSoundEffects = async () => {
-    try {
-      const fileMap = {
-        success: require('../assets/success.mp3'),
-        error: require('../assets/error.mp3'),
-        applause: require('../assets/applause.mp3'),
-        sadTone: require('../assets/sad_tone.mp3'),
-        cheer: require('../assets/cheer.mp3'),
-        boo: require('../assets/boo.mp3'),
-      };
-
-      for (const name of Object.keys(fileMap)) {
-        const { sound } = await Audio.Sound.createAsync(fileMap[name]);
-        soundEffects.current[name] = sound;
-      }
-    } catch (error) {
-      console.log('Sound effects load error:', error.message);
-    }
-  };
-
-  const unloadSoundEffects = async () => {
-    for (const key of Object.keys(soundEffects.current)) {
-      if (soundEffects.current[key]) {
-        try {
-          await soundEffects.current[key].unloadAsync();
-        } catch (error) {
-          // Sound may already be unloaded
-        }
-        soundEffects.current[key] = null;
-      }
-    }
-  };
-
   const playSound = useCallback(async (name) => {
     const currentSettings = settingsRef.current;
-    if (!currentSettings.soundEffects) return;
+    if (!currentSettings.soundEffects || !audioReady) return;
     const sound = soundEffects.current[name];
     if (sound) {
       try {
@@ -201,7 +204,7 @@ export default function CrosswordGame() {
         console.log(`Error playing ${name}:`, error.message);
       }
     }
-  }, []);
+  }, [audioReady]);
 
   // ─── GAME LOGIC ─────────────────────────────────────────────────────────
   const checkCellCorrectness = useCallback((newAnswers, row, col) => {
@@ -257,7 +260,11 @@ export default function CrosswordGame() {
       if (result === 'correct') {
         playSound('success');
         if (currentSettings.vibration) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          try {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          } catch (e) {
+            // ignore
+          }
         }
         if (currentSettings.animations) {
           setAnimationKey((k) => k + 1);
@@ -265,7 +272,11 @@ export default function CrosswordGame() {
       } else if (result === 'wrong') {
         playSound('error');
         if (currentSettings.vibration) {
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          try {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+          } catch (e) {
+            // ignore
+          }
         }
       }
 
@@ -277,7 +288,11 @@ export default function CrosswordGame() {
           playSound('applause');
           setTimeout(() => playSound('cheer'), 1500);
           if (currentSettings.vibration) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            try {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+            } catch (e) {
+              // ignore
+            }
           }
           setTimeout(() => {
             Alert.alert(
@@ -290,7 +305,11 @@ export default function CrosswordGame() {
           playSound('sadTone');
           setTimeout(() => playSound('boo'), 1500);
           if (currentSettings.vibration) {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            try {
+              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+            } catch (e) {
+              // ignore
+            }
           }
           setTimeout(() => {
             Alert.alert(
@@ -319,7 +338,7 @@ export default function CrosswordGame() {
     <KeyboardAvoidingView
       style={[styles.container, isDark && styles.darkContainer]}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={0}
+      keyboardVerticalOffset={Platform.OS === 'android' ? 0 : undefined}
     >
       <StatusBar
         barStyle={isDark ? 'light-content' : 'dark-content'}

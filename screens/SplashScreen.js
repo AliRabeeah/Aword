@@ -9,13 +9,31 @@ export default function SplashScreen() {
   const soundRef = useRef(null);
 
   useEffect(() => {
+    let isMounted = true;
+
+    const playIntroMusic = async () => {
+      try {
+        await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+        const { sound } = await Audio.Sound.createAsync(
+          require('../assets/intro_music.mp3'),
+          { shouldPlay: true, isLooping: false, volume: 0.5 }
+        );
+        soundRef.current = sound;
+      } catch (error) {
+        console.log('Intro music error:', error.message);
+      }
+    };
+
     playIntroMusic();
 
     const timer = setTimeout(() => {
-      navigation.replace('CrosswordGame');
+      if (isMounted) {
+        navigation.replace('CrosswordGame');
+      }
     }, 3500);
 
     return () => {
+      isMounted = false;
       clearTimeout(timer);
       if (soundRef.current) {
         try {
@@ -26,19 +44,6 @@ export default function SplashScreen() {
       }
     };
   }, [navigation]);
-
-  const playIntroMusic = async () => {
-    try {
-      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
-      const { sound } = await Audio.Sound.createAsync(
-        require('../assets/intro_music.mp3')
-      );
-      soundRef.current = sound;
-      await sound.playAsync();
-    } catch (error) {
-      console.log('Intro music error:', error.message);
-    }
-  };
 
   return (
     <View style={styles.container}>
