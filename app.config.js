@@ -8,7 +8,4 @@ module.exports = ({ config }) => ({
       projectId: '5d909088-fc8f-42ce-a720-1dd7d9d0ac47',
     },
   },
-  cli: {
-    appVersionSource: 'local',
-  },
 });
