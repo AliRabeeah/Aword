@@ -2,7 +2,7 @@
   "expo": {
     "name": "A word",
     "slug": "aword",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon_orange.png",
     "userInterfaceStyle": "light",
@@ -24,7 +24,7 @@
         "backgroundColor": "#FF6600"
       },
       "package": "com.alihalim.aword",
-      "versionCode": 1
+      "versionCode": 2
     },
     "web": {
       "favicon": "./assets/icon_orange.png"
