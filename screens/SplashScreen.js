@@ -65,7 +65,7 @@ export default function SplashScreen() {
           iterationCount="infinite"
           style={styles.title}
         >
-          A word
+          كلمة
         </Animatable.Text>
         <Animatable.Text
           animation="fadeIn"
@@ -73,7 +73,7 @@ export default function SplashScreen() {
           delay={1000}
           style={styles.subtitle}
         >
-          by Ali Halim
+          بواسطة علي حليم
         </Animatable.Text>
       </Animatable.View>
 
@@ -89,7 +89,7 @@ export default function SplashScreen() {
           iterationCount={2}
           style={styles.credit}
         >
-          Crossword Puzzle Game
+          لعبة الكلمات المتقاطعة
         </Animatable.Text>
       </Animatable.View>
     </View>

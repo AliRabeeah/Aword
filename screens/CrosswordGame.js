@@ -18,27 +18,27 @@ import * as Haptics from 'expo-haptics';
 import { Audio } from 'expo-av';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ─── PUZZLE DATA ────────────────────────────────────────────────────────────
+// ─── PUZZLE DATA (بيانات اللغز) ─────────────────────────────────────────────
+// شبكة مُتحقَّق منها: كل كلمة أفقية ورأسية صحيحة والحروف المتقاطعة متطابقة.
+//   س ك ن     أفقي: سكن / وتر / نار / لبن
+//   و ت ر     رأسي: كتاب (العمود الأوسط)
+//   ن ا ر
+//   ل ب ن
 const PUZZLE = {
   grid: [
-    ['C', 'L', 'U', 'E', null],
-    ['R', 'O', 'O', 'K', null],
-    ['O', 'S', 'S', 'W', null],
-    ['W', 'I', 'E', 'R', null],
-    ['D', 'W', 'R', 'D', null],
+    ['س', 'ك', 'ن'],
+    ['و', 'ت', 'ر'],
+    ['ن', 'ا', 'ر'],
+    ['ل', 'ب', 'ن'],
   ],
   acrossClues: [
-    { row: 0, number: 1, clue: 'Hint or puzzle (4)' },
-    { row: 1, number: 4, clue: 'Chess piece (4)' },
-    { row: 2, number: 6, clue: 'Chess piece (4)' },
-    { row: 3, number: 8, clue: 'Welder works on this (4)' },
-    { row: 4, number: 9, clue: 'Word or speech (4)' },
+    { row: 0, number: 1, clue: 'مكان الإقامة (3 أحرف)' },
+    { row: 1, number: 3, clue: 'خيط آلة موسيقية (3 أحرف)' },
+    { row: 2, number: 4, clue: 'اللهب والحريق (3 أحرف)' },
+    { row: 3, number: 5, clue: 'مشروب أبيض من الحليب (3 أحرف)' },
   ],
   downClues: [
-    { col: 0, number: 1, clue: 'Card game (5)' },
-    { col: 1, number: 2, clue: 'Pile of leaves (5)' },
-    { col: 2, number: 3, clue: 'Moss-like growth (5)' },
-    { col: 3, number: 5, clue: 'Bird that crows (5)' },
+    { col: 1, number: 2, clue: 'فيه صفحات ومعرفة، يُقرأ (4 أحرف)' },
   ],
 };
 
@@ -281,9 +281,9 @@ export default function CrosswordGame() {
           }
           setTimeout(() => {
             Alert.alert(
-              'Congratulations!',
-              'You completed the crossword puzzle!',
-              [{ text: 'Play Again', onPress: resetPuzzle }]
+              'تهانينا! 🎉',
+              'لقد أكملت لغز الكلمات المتقاطعة!',
+              [{ text: 'العب مرة أخرى', onPress: resetPuzzle }]
             );
           }, 1000);
         } else {
@@ -294,9 +294,9 @@ export default function CrosswordGame() {
           }
           setTimeout(() => {
             Alert.alert(
-              'Not quite right...',
-              'Some answers are incorrect. Keep trying!',
-              [{ text: 'OK' }]
+              'ليست صحيحة تمامًا...',
+              'بعض الإجابات غير صحيحة. حاول مرة أخرى!',
+              [{ text: 'حسنًا' }]
             );
           }, 1000);
         }
@@ -329,7 +329,7 @@ export default function CrosswordGame() {
       {/* Header */}
       <View style={[styles.header, isDark && styles.darkHeader]}>
         <Text style={[styles.headerTitle, isDark && styles.darkText]}>
-          A word
+          كلمة
         </Text>
         <TouchableOpacity
           style={[styles.settingsBtn, isDark && styles.darkSettingsBtn]}
@@ -401,7 +401,7 @@ export default function CrosswordGame() {
         {/* Clues Section */}
         <View style={[styles.cluesContainer, isDark && styles.darkClues]}>
           <Text style={[styles.sectionTitle, isDark && styles.darkText]}>
-            Across
+            أفقي
           </Text>
           {PUZZLE.acrossClues.map((clue, i) => (
             <Text
@@ -413,7 +413,7 @@ export default function CrosswordGame() {
           ))}
 
           <Text style={[styles.sectionTitle, isDark && styles.darkText]}>
-            Down
+            رأسي
           </Text>
           {PUZZLE.downClues.map((clue, i) => (
             <Text
@@ -430,7 +430,7 @@ export default function CrosswordGame() {
           style={[styles.resetBtn, isDark && styles.darkResetBtn]}
           onPress={resetPuzzle}
         >
-          <Text style={styles.resetText}>Reset Puzzle</Text>
+          <Text style={styles.resetText}>إعادة اللغز</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -445,7 +445,7 @@ export default function CrosswordGame() {
           <View style={[styles.modalContent, isDark && styles.darkModal]}>
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, isDark && styles.darkText]}>
-                Settings
+                الإعدادات
               </Text>
               <TouchableOpacity onPress={() => setShowSettings(false)}>
                 <Text style={[styles.closeBtn, isDark && styles.darkText]}>
@@ -456,7 +456,7 @@ export default function CrosswordGame() {
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, isDark && styles.darkText]}>
-                Dark Mode
+                الوضع الداكن
               </Text>
               <Switch
                 value={settings.darkMode}
@@ -468,7 +468,7 @@ export default function CrosswordGame() {
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, isDark && styles.darkText]}>
-                Vibration
+                الاهتزاز
               </Text>
               <Switch
                 value={settings.vibration}
@@ -480,7 +480,7 @@ export default function CrosswordGame() {
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, isDark && styles.darkText]}>
-                Sound Effects
+                المؤثرات الصوتية
               </Text>
               <Switch
                 value={settings.soundEffects}
@@ -492,7 +492,7 @@ export default function CrosswordGame() {
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, isDark && styles.darkText]}>
-                Background Music
+                الموسيقى الخلفية
               </Text>
               <Switch
                 value={settings.music}
@@ -504,7 +504,7 @@ export default function CrosswordGame() {
 
             <View style={styles.settingRow}>
               <Text style={[styles.settingLabel, isDark && styles.darkText]}>
-                Animations
+                الرسوم المتحركة
               </Text>
               <Switch
                 value={settings.animations}
@@ -532,7 +532,7 @@ export default function CrosswordGame() {
               iterationCount="infinite"
               style={styles.winText}
             >
-              WIN!
+              فُزت! 🎉
             </Animatable.Text>
           </View>
         </Animatable.View>
@@ -587,7 +587,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF6600',
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     marginBottom: 4,
   },
   cell: {
@@ -635,12 +635,16 @@ const styles = StyleSheet.create({
     color: '#FF6600',
     marginTop: 15,
     marginBottom: 8,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   clueText: {
     fontSize: 15,
     color: '#333333',
     marginBottom: 5,
     lineHeight: 22,
+    textAlign: 'right',
+    writingDirection: 'rtl',
   },
   darkText: {
     color: '#FFFFFF',
@@ -677,7 +681,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#16213e',
   },
   modalHeader: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
@@ -686,13 +690,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333333',
+    writingDirection: 'rtl',
   },
   closeBtn: {
     fontSize: 24,
     color: '#333333',
   },
   settingRow: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 15,
@@ -702,6 +707,7 @@ const styles = StyleSheet.create({
   settingLabel: {
     fontSize: 16,
     color: '#333333',
+    writingDirection: 'rtl',
   },
   // Win overlay
   winOverlay: {

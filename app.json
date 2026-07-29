@@ -20,10 +20,11 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon_orange.png",
+        "foregroundImage": "./assets/icon_orange_foreground.png",
         "backgroundColor": "#FF6600"
       },
-      "package": "com.alihalim.aword"
+      "package": "com.alihalim.aword",
+      "versionCode": 1
     },
     "web": {
       "favicon": "./assets/icon_orange.png"

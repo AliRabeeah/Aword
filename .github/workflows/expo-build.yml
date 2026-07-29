@@ -5,6 +5,11 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+# Needed so this workflow can push the version bump commit and create a
+# GitHub Release with the APK attached.
+permissions:
+  contents: write
+
 jobs:
   build:
     name: Build Expo App
@@ -15,6 +20,9 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
+        with:
+          # Default GITHUB_TOKEN can push back to this same repo.
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,5 +46,60 @@ jobs:
       - name: Install Dependencies
         run: npm install
 
+      # Bumps the patch version (e.g. 1.0.0 -> 1.0.1) and the Android
+      # versionCode in app.json every time this workflow runs, then
+      # commits that bump back to the repo so the number keeps climbing
+      # on every future change to the project.
+      - name: Bump Version
+        id: version
+        run: |
+          node -e "
+            const fs = require('fs');
+            const app = JSON.parse(fs.readFileSync('app.json', 'utf8'));
+            const parts = app.expo.version.split('.').map(Number);
+            parts[2] = (parts[2] || 0) + 1;
+            app.expo.version = parts.join('.');
+            app.expo.android = app.expo.android || {};
+            app.expo.android.versionCode = (app.expo.android.versionCode || 0) + 1;
+            fs.writeFileSync('app.json', JSON.stringify(app, null, 2) + '\n');
+            console.log(app.expo.version);
+          " > /tmp/new_version.txt
+          echo "version=$(cat /tmp/new_version.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit Version Bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add app.json
+          git commit -m "chore: bump version to ${{ steps.version.outputs.version }} [skip ci]" || echo "No changes to commit"
+          git push
+
       - name: Build Android (APK)
-        run: eas build --platform android --profile preview --non-interactive
+        id: eas_build
+        run: |
+          eas build --platform android --profile preview --non-interactive --json --wait > build-output.json
+          cat build-output.json
+
+      - name: Download APK
+        run: |
+          BUILD_URL=$(node -e "console.log(JSON.parse(require('fs').readFileSync('build-output.json','utf8'))[0].artifacts.buildUrl)")
+          echo "Downloading $BUILD_URL"
+          curl -L -o app.apk "$BUILD_URL"
+
+      # Names the file after the game (its slug) and the freshly bumped
+      # version, e.g. aword-v1.0.7.apk, and puts it under this repo's
+      # Releases section.
+      - name: Rename APK
+        id: rename
+        run: |
+          SLUG=$(node -e "console.log(require('./app.json').expo.slug)")
+          FILENAME="${SLUG}-v${{ steps.version.outputs.version }}.apk"
+          mv app.apk "$FILENAME"
+          echo "filename=$FILENAME" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.version.outputs.version }}
+          name: v${{ steps.version.outputs.version }}
+          files: ${{ steps.rename.outputs.filename }}
